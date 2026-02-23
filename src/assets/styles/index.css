@@ -1,0 +1,14 @@
+/* Barrel import - imports all style modules in correct order */
+@import './variables.css';
+@import './base.css';
+@import './header.css';
+@import './card.css';
+@import './form.css';
+@import './load-list.css';
+@import './button.css';
+@import './canvas.css';
+@import './result.css';
+@import './modal.css';
+@import './footer.css';
+@import './scrollbar.css';
+@import './responsive.css';

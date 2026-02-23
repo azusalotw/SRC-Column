@@ -1,0 +1,15 @@
+/* ============================================
+   頁尾
+   ============================================ */
+footer {
+    background-color: var(--footer-bg);
+    color: var(--text-tertiary);
+    padding: 2rem 0;
+    text-align: center;
+    margin-top: 3rem;
+    border-top: 1px solid var(--border-color);
+}
+
+footer p {
+    font-size: 0.9rem;
+}

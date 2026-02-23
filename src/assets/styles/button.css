@@ -1,0 +1,140 @@
+/* ============================================
+   按鈕元件
+   ============================================ */
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.btn-action svg {
+    flex-shrink: 0;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* 修改 */
+.btn-modify:hover {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+/* 刪除 */
+.btn-delete:hover {
+    background: var(--gradient-danger);
+    color: white;
+    border-color: transparent;
+}
+
+/* 匯出 */
+.btn-export:hover {
+    background: var(--gradient-success);
+    color: white;
+    border-color: transparent;
+}
+
+/* 初始化 */
+.btn-init:hover {
+    background: var(--gradient-warning);
+    color: white;
+    border-color: transparent;
+}
+
+/* 建立表單 */
+.btn-create:hover {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+/* 匯入表單 */
+.btn-import:hover {
+    background: var(--gradient-steel);
+    color: white;
+    border-color: transparent;
+}
+
+/* 輸入載重 */
+.btn-input-load:hover {
+    background: var(--gradient-success);
+    color: white;
+    border-color: transparent;
+}
+
+/* 繪製斷面 */
+.btn-draw:hover {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+/* 計算 PM-Curve 主按鈕 */
+.btn-primary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    letter-spacing: 0.3px;
+}
+
+.btn-primary-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary-action:active {
+    transform: translateY(-1px);
+}
+
+/* PM 操作按鈕列 */
+.pm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+}
+
+/* 斷面圖按鈕列 */
+.section-diagram-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    align-items: center;
+}
+
+.btn-calc-props {
+    font-size: 0.88rem !important;
+    padding: 9px 20px !important;
+}

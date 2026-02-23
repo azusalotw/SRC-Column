@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複合柱強度檢核工具</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 頁首 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <a href="#">複合柱強度檢核</a>
+                </div>
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="src">SRC 柱</button>
+                    <button class="tab-btn" data-tab="cft">CFT 柱</button>
+                </div>
+                <div class="nav-links">
+                    <span class="author-info">Author: Tzu-Ting Lo</span>
+                    <button class="theme-toggle" id="themeToggle" aria-label="切換主題">
+                        <div class="theme-toggle-slider">
+                            <svg id="themeIcon" class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g id="sunIcon">
+                                    <circle cx="12" cy="12" r="5"/>
+                                    <line x1="12" y1="1" x2="12" y2="3"/>
+                                    <line x1="12" y1="21" x2="12" y2="23"/>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                    <line x1="1" y1="12" x2="3" y2="12"/>
+                                    <line x1="21" y1="12" x2="23" y2="12"/>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                                </g>
+                                <g id="moonIcon" style="display: none;">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                </g>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主內容區 -->
+    <main>
+        <div class="container">
+            <!-- ===== SRC Tab ===== -->
+            <div class="tab-content active" id="tabSRC">
+            <div class="app-layout">
+
+                <!-- ===== 左側面板：輸入區域 ===== -->
+                <div class="input-panel">
+
+                    <!-- 1. 材料性質 -->
+                    <div class="card" id="materialCard">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <h3>1. 材料性質</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <label>f'c =</label>
+                                <input type="number" id="fc" value="280" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>fy =</label>
+                                <input type="number" id="fy" value="4200" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Fy (鋼骨) =</label>
+                                <input type="number" id="Fys" value="3500" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Es =</label>
+                                <input type="number" id="Es" value="2040000" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Ec =</label>
+                                <input type="text" id="Ec" class="input-field input-readonly" readonly>
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label for="codeVersion">規範版本</label>
+                                <select id="codeVersion" class="select-field select-wide">
+                                    <option value="2011">現行規範 (2011)</option>
+                                    <option value="2024">修正草案 (2024)</option>
+                                </select>
+                            </div>
+                            <div class="form-row" id="ryRow" style="display:none;">
+                                <label for="steelGrade">鋼材種類</label>
+                                <select id="steelGrade" class="select-field select-wide">
+                                    <option value="A572">A572 Gr.50 (Ry=1.1)</option>
+                                    <option value="SN490B">SN490B (Ry=1.2)</option>
+                                    <option value="A36">A36 / SN400 (Ry=1.3)</option>
+                                    <option value="SM570">SM570 (Ry=1.1)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 斷面尺寸 -->
+                    <div class="card" id="sectionCard">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="3" y1="12" x2="21" y2="12"/>
+                                    <line x1="12" y1="3" x2="12" y2="21"/>
+                                </svg>
+                            </div>
+                            <h3>2. RC斷面尺寸</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <label>B =</label>
+                                <input type="number" id="sectionB" value="80" class="input-field">
+                                <span class="unit">cm</span>
+                            </div>
+                            <div class="form-row">
+                                <label>H =</label>
+                                <input type="number" id="sectionH" value="80" class="input-field">
+                                <span class="unit">cm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 鋼骨斷面 -->
+                    <div class="card" id="steelCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-steel">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 4h20v2H2z"/>
+                                    <path d="M2 18h20v2H2z"/>
+                                    <path d="M11 6h2v12h-2z"/>
+                                </svg>
+                            </div>
+                            <h3>3. 鋼骨斷面</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <label for="steelShape">斷面形狀</label>
+                                <select id="steelShape" class="select-field select-wide">
+                                    <option value="H">H 型</option>
+                                    <option value="DoubleH">Double H 型</option>
+                                    <option value="Box">Box 型</option>
+                                </select>
+                            </div>
+                            <div class="form-grid-2col">
+                                <div class="form-row">
+                                    <label>H =</label>
+                                    <input type="number" id="steelH" value="400" class="input-field">
+                                    <span class="unit">mm</span>
+                                </div>
+                                <div class="form-row">
+                                    <label>B =</label>
+                                    <input type="number" id="steelB" value="200" class="input-field">
+                                    <span class="unit">mm</span>
+                                </div>
+                                <div class="form-row">
+                                    <label>tw =</label>
+                                    <input type="number" id="steelTw" value="8" class="input-field">
+                                    <span class="unit">mm</span>
+                                </div>
+                                <div class="form-row">
+                                    <label>tf =</label>
+                                    <input type="number" id="steelTf" value="13" class="input-field">
+                                    <span class="unit">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. 鋼筋配置 -->
+                    <div class="card" id="rebarCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-rebar">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="6" cy="6" r="2"/>
+                                    <circle cx="18" cy="6" r="2"/>
+                                    <circle cx="6" cy="18" r="2"/>
+                                    <circle cx="18" cy="18" r="2"/>
+                                    <circle cx="12" cy="12" r="2"/>
+                                </svg>
+                            </div>
+                            <h3>4. 鋼筋配置</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="rebarMode" value="uniform" checked>
+                                    <span class="radio-custom"></span>
+                                    均佈配置
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="rebarMode" value="custom">
+                                    <span class="radio-custom"></span>
+                                    指定座標
+                                </label>
+                                <div class="max-rebar-row">
+                                    <label>最大鋼筋量</label>
+                                    <input type="number" id="maxRebar" value="4" class="input-field input-sm">
+                                    <span class="unit">%</span>
+                                </div>
+                            </div>
+
+                            <!-- 均佈配置面板 -->
+                            <div class="rebar-uniform-panel" id="rebarUniformPanel">
+                                <div class="form-grid-2col">
+                                    <div class="form-row">
+                                        <label>保護層 =</label>
+                                        <input type="number" id="cover" value="6" class="input-field">
+                                        <span class="unit">cm</span>
+                                    </div>
+                                    <div class="form-row">
+                                        <label>箍筋號數 =</label>
+                                        <select id="stirrupSize" class="select-field">
+                                            <option value="D10">D10</option>
+                                            <option value="D13" selected>D13</option>
+                                            <option value="D16">D16</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-row">
+                                        <label>主筋號數 =</label>
+                                        <select id="rebarSizeUniform" class="select-field">
+                                            <option value="D10">D10</option>
+                                            <option value="D13">D13</option>
+                                            <option value="D16">D16</option>
+                                            <option value="D19">D19</option>
+                                            <option value="D22">D22</option>
+                                            <option value="D25" selected>D25</option>
+                                            <option value="D29">D29</option>
+                                            <option value="D32">D32</option>
+                                            <option value="D36">D36</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-row">
+                                        <label>每邊支數 Y =</label>
+                                        <input type="number" id="rebarCountY" value="4" class="input-field">
+                                        <span class="unit">支</span>
+                                    </div>
+                                    <div class="form-row">
+                                        <label>每邊支數 Z =</label>
+                                        <input type="number" id="rebarCountZ" value="4" class="input-field">
+                                        <span class="unit">支</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 指定座標面板 -->
+                            <div class="rebar-custom-panel" id="rebarCustomPanel" style="display:none;">
+                                <div class="rebar-input-row">
+                                    <div class="form-row compact">
+                                        <label>編號</label>
+                                        <input type="number" id="rebarNo" value="1" class="input-field input-sm">
+                                    </div>
+                                    <div class="form-row compact">
+                                        <label>Y(cm)</label>
+                                        <input type="number" id="rebarY" value="0" class="input-field input-sm">
+                                    </div>
+                                    <div class="form-row compact">
+                                        <label>Z(cm)</label>
+                                        <input type="number" id="rebarZ" value="0" class="input-field input-sm">
+                                    </div>
+                                    <div class="form-row compact">
+                                        <label>號數</label>
+                                        <select id="rebarSize" class="select-field select-sm">
+                                            <option value="D10">D10</option>
+                                            <option value="D13">D13</option>
+                                            <option value="D16">D16</option>
+                                            <option value="D19">D19</option>
+                                            <option value="D22">D22</option>
+                                            <option value="D25" selected>D25</option>
+                                            <option value="D29">D29</option>
+                                            <option value="D32">D32</option>
+                                            <option value="D36">D36</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="rebar-list-container">
+                                    <div class="rebar-list" id="rebarList">
+                                        <div class="rebar-list-empty">尚未配置鋼筋</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-actions">
+                                <button class="btn-action btn-modify" id="btnModifyRebar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    修改鋼筋
+                                </button>
+                                <button class="btn-action btn-delete" id="btnDeleteRebar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                    刪除鋼筋
+                                </button>
+                                <button class="btn-action btn-export" id="btnExportRebar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    匯出鋼筋
+                                </button>
+                                <button class="btn-action btn-init" id="btnInitRebar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                                    初始化
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. 設計載重 -->
+                    <div class="card" id="loadCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-load">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="2" x2="12" y2="22"/>
+                                    <polyline points="8 6 12 2 16 6"/>
+                                    <polyline points="8 18 12 22 16 18"/>
+                                </svg>
+                            </div>
+                            <h3>5. 設計載重 (C- ; T+)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="load-header-row">
+                                <div class="form-row compact">
+                                    <label>箍筋類型</label>
+                                    <select id="stirrupType" class="select-field">
+                                        <option value="tie">橫箍筋</option>
+                                        <option value="spiral">螺旋箍筋</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="load-input-row">
+                                <div class="form-row compact">
+                                    <label>編號</label>
+                                    <input type="number" id="loadNo" value="1" class="input-field input-sm">
+                                </div>
+                                <div class="form-row compact">
+                                    <label>Pu (tf)</label>
+                                    <input type="number" id="loadPu" value="0" class="input-field input-sm">
+                                </div>
+                                <div class="form-row compact">
+                                    <label>Muy (tf-m)</label>
+                                    <input type="number" id="loadMuy" value="0" class="input-field input-sm">
+                                </div>
+                            </div>
+                            <div class="load-list-container">
+                                <div class="load-list" id="loadList">
+                                    <div class="load-list-empty">尚未輸入載重</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-action btn-create" id="btnCreateTable">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                                    建立表單
+                                </button>
+                                <button class="btn-action btn-import" id="btnImportTable">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    匯入表單
+                                </button>
+                                <button class="btn-action btn-input-load" id="btnInputLoad">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    輸入載重
+                                </button>
+                                <button class="btn-action btn-init" id="btnInitLoad">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                                    初始化
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== 中間面板：視覺化區域 ===== -->
+                <div class="visual-panel">
+
+                    <!-- 斷面配置圖 -->
+                    <div class="card card-visual" id="sectionDiagramCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-diagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                                    <circle cx="16" cy="8" r="1.5" fill="currentColor"/>
+                                    <circle cx="8" cy="16" r="1.5" fill="currentColor"/>
+                                    <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <h3>斷面配置圖</h3>
+                        </div>
+                        <div class="card-body canvas-body">
+                            <canvas id="sectionCanvas" width="500" height="450"></canvas>
+                            <div class="section-diagram-actions">
+                                <button class="btn-action btn-draw" id="btnDrawSection">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                                    繪製斷面
+                                </button>
+                                <button class="btn-primary-action btn-calc-props" id="btnCalcProps">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+                                    計算斷面性質
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PM Curve 圖 -->
+                    <div class="card card-visual" id="pmCurveCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-chart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                    <line x1="2" y1="20" x2="22" y2="20"/>
+                                </svg>
+                            </div>
+                            <h3>P-M Interaction Curve</h3>
+                        </div>
+                        <div class="card-body canvas-body">
+                            <canvas id="pmCurveCanvas" width="500" height="400"></canvas>
+                            <div class="pm-actions">
+                                <button class="btn-primary-action" id="btnPMCurve">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    計算 PM-Curve
+                                </button>
+                                <button class="btn-action btn-export" id="btnExportPM">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    匯出結果
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== 右側面板：斷面性質 ===== -->
+                <div class="result-panel">
+
+                    <!-- 斷面性質 -->
+                    <div class="card" id="resultCard">
+                        <div class="card-header">
+                            <div class="card-icon icon-result">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            <h3>斷面性質</h3>
+                        </div>
+                        <div class="card-body" id="resultBody">
+                            <div class="result-placeholder" id="resultPlaceholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                                <p>點擊「計算斷面性質」查看結果</p>
+                            </div>
+                            <div class="result-content" id="resultContent" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            </div><!-- #tabSRC -->
+
+            <!-- ===== CFT Tab ===== -->
+            <div class="tab-content" id="tabCFT">
+            <div class="app-layout">
+
+                <!-- ===== 左側面板：輸入區域 ===== -->
+                <div class="input-panel">
+
+                    <!-- 1. 材料性質 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <h3>1. 材料性質</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <label>f'c =</label>
+                                <input type="number" id="cftFc" value="280" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Fys =</label>
+                                <input type="number" id="cftFys" value="3500" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Fyr =</label>
+                                <input type="number" id="cftFyr" value="0" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Es =</label>
+                                <input type="number" id="cftEs" value="2040000" class="input-field">
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-row">
+                                <label>Ec =</label>
+                                <input type="text" id="cftEc" class="input-field input-readonly" readonly>
+                                <span class="unit">kgf/cm<sup>2</sup></span>
+                            </div>
+                            <div class="form-grid-2col">
+                                <div class="form-row">
+                                    <label>φc =</label>
+                                    <input type="number" id="cftPhiC" value="0.85" step="0.01" class="input-field">
+                                </div>
+                                <div class="form-row">
+                                    <label>φb =</label>
+                                    <input type="number" id="cftPhiB" value="0.90" step="0.01" class="input-field">
+                                </div>
+                            </div>
+                            <div class="form-grid-2col">
+                                <div class="form-row">
+                                    <label>c1 =</label>
+                                    <input type="number" id="cftC1" value="1.00" step="0.01" class="input-field">
+                                </div>
+                                <div class="form-row">
+                                    <label>c2 =</label>
+                                    <input type="number" id="cftC2" value="0.85" step="0.01" class="input-field">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label>c3 =</label>
+                                <input type="number" id="cftC3" value="0.40" step="0.01" class="input-field">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 箱型鋼管斷面 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-steel">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="1"/>
+                                    <rect x="6" y="6" width="12" height="12" rx="0.5" stroke-dasharray="3 2"/>
+                                </svg>
+                            </div>
+                            <h3>2. 箱型鋼管斷面</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-grid-2col">
+                                <div class="form-row">
+                                    <label>B =</label>
+                                    <input type="number" id="cftB" value="150" class="input-field">
+                                    <span class="unit">cm</span>
+                                </div>
+                                <div class="form-row">
+                                    <label>H =</label>
+                                    <input type="number" id="cftH" value="150" class="input-field">
+                                    <span class="unit">cm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label>tw =</label>
+                                <input type="number" id="cftTw" value="6" class="input-field">
+                                <span class="unit">cm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 柱參數 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-diagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="2" x2="12" y2="22"/><polyline points="8 6 12 2 16 6"/><polyline points="8 18 12 22 16 18"/><line x1="4" y1="12" x2="20" y2="12"/>
+                                </svg>
+                            </div>
+                            <h3>3. 柱參數</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <label>柱長 L =</label>
+                                <input type="number" id="cftLength" value="3.5" step="0.01" class="input-field">
+                                <span class="unit">m</span>
+                            </div>
+                            <div class="form-row">
+                                <label>K =</label>
+                                <input type="number" id="cftKx" value="1.0" step="0.1" class="input-field">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. 設計載重 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-load">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="2" x2="12" y2="22"/><polyline points="8 6 12 2 16 6"/><polyline points="8 18 12 22 16 18"/>
+                                </svg>
+                            </div>
+                            <h3>4. 設計載重 (C- ; T+)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="load-input-row">
+                                <div class="form-row compact">
+                                    <label>編號</label>
+                                    <input type="number" id="cftLoadNo" value="1" class="input-field input-sm">
+                                </div>
+                                <div class="form-row compact">
+                                    <label>P<sub>u</sub> (tf)</label>
+                                    <input type="number" id="cftLoadPu" value="0" class="input-field input-sm">
+                                </div>
+                                <div class="form-row compact">
+                                    <label>M<sub>u</sub> (tf-m)</label>
+                                    <input type="number" id="cftLoadMu" value="0" class="input-field input-sm">
+                                </div>
+                            </div>
+                            <div class="load-list-container">
+                                <div class="load-list" id="cftLoadList">
+                                    <div class="load-list-empty">尚未輸入載重</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-action btn-import" id="btnCftImport">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    匯入表單
+                                </button>
+                                <button class="btn-action btn-input-load" id="btnCftInputLoad">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    輸入載重
+                                </button>
+                                <button class="btn-action btn-init" id="btnCftInitLoad">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                                    初始化
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== 中間面板：視覺化區域 ===== -->
+                <div class="visual-panel">
+
+                    <!-- 斷面配置圖 -->
+                    <div class="card card-visual">
+                        <div class="card-header">
+                            <div class="card-icon icon-diagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <rect x="7" y="7" width="10" height="10" rx="1" stroke-dasharray="3 2"/>
+                                </svg>
+                            </div>
+                            <h3>箱型斷面配置圖</h3>
+                        </div>
+                        <div class="card-body canvas-body">
+                            <canvas id="cftSectionCanvas" width="500" height="400"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- P-M Interaction -->
+                    <div class="card card-visual">
+                        <div class="card-header">
+                            <div class="card-icon icon-chart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+                                </svg>
+                            </div>
+                            <h3>P-M Interaction Check</h3>
+                        </div>
+                        <div class="card-body canvas-body">
+                            <canvas id="cftPMCanvas" width="500" height="400"></canvas>
+                            <div class="pm-actions">
+                                <button class="btn-primary-action" id="btnCftCalc">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    計算強度檢核
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== 右側面板：檢核結果 ===== -->
+                <div class="result-panel">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon icon-result">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            <h3>CFT 強度檢核結果</h3>
+                        </div>
+                        <div class="card-body" id="cftResultBody">
+                            <div class="result-placeholder" id="cftResultPlaceholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                <p>點擊「計算強度檢核」查看結果</p>
+                            </div>
+                            <div class="result-content" id="cftResultContent" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            </div><!-- #tabCFT -->
+
+        </div>
+    </main>
+
+    <!-- ===== 載重表單 Modal ===== -->
+    <div class="modal-overlay" id="loadTableModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>批次輸入載重</h3>
+                <button class="modal-close" id="modalCancel" title="關閉">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>編號</th>
+                            <th>Pu (tf)</th>
+                            <th>Muy (tf-m)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody"></tbody>
+                </table>
+                <button class="btn-action btn-modal-add" id="modalAddRow">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    新增列
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action btn-modal-cancel" id="modalCancelBtn">取消</button>
+                <button class="btn-primary-action btn-modal-confirm" id="modalConfirm">確定匯入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 匯入載重 Modal ===== -->
+    <div class="modal-overlay" id="loadImportModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>匯入載重 (文字格式)</h3>
+                <button class="modal-close" id="importCancel" title="關閉">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-hint">每行一組載重，格式：<code>P, M</code></p>
+                <textarea id="importTextarea" class="modal-textarea" rows="10" placeholder="100,10&#10;200,5&#10;300,6"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action btn-modal-cancel" id="importCancelBtn">取消</button>
+                <button class="btn-primary-action btn-modal-confirm" id="importConfirm">確定匯入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CFT 匯入載重 Modal ===== -->
+    <div class="modal-overlay" id="cftImportModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>匯入載重 (文字格式)</h3>
+                <button class="modal-close" id="cftImportCancel" title="關閉">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-hint">每行一組載重，格式：<code>P, M</code></p>
+                <textarea id="cftImportTextarea" class="modal-textarea" rows="10" placeholder="100,10&#10;200,5&#10;300,6"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action btn-modal-cancel" id="cftImportCancelBtn">取消</button>
+                <button class="btn-primary-action btn-modal-confirm" id="cftImportConfirm">確定匯入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer>
+        <div class="container">
+            <p>SRC柱 P-M Curve 檢核工具 &copy; 2025 | Author: Tzu-Ting Lo</p>
+        </div>
+    </footer>
+
+    <script src="js/theme.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/cft.js"></script>
+</body>
+</html>

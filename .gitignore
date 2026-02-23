@@ -1,2 +1,20 @@
+# 編輯器與工具
 /.claude
 /.vscode
+
+# 依賴套件
+/node_modules
+
+# 環境變數（機密）
+.env
+.env.local
+.env.*.local
+
+# Build 產出物
+/dist
+
+# TypeScript 增量編譯快取
+*.tsbuildinfo
+
+# Windows 垃圾檔案
+nul

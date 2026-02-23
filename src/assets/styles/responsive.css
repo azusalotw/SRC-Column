@@ -1,0 +1,126 @@
+/* ============================================
+   響應式設計
+   ============================================ */
+
+/* 大螢幕 */
+@media (min-width: 1800px) {
+    .app-layout {
+        grid-template-columns: 420px 1fr 360px;
+        gap: 2rem;
+    }
+}
+
+/* 中等螢幕 */
+@media (max-width: 1400px) {
+    .app-layout {
+        grid-template-columns: 350px 1fr 300px;
+        gap: 1rem;
+    }
+}
+
+/* 平板橫向 & 小桌機 - 改兩欄 (左: 輸入, 右: 圖+結果) */
+@media (max-width: 1100px) {
+    .app-layout {
+        grid-template-columns: 380px 1fr;
+        gap: 1rem;
+    }
+
+    .result-panel {
+        position: static;
+    }
+}
+
+/* 平板直向 */
+@media (max-width: 960px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .visual-panel {
+        position: static;
+    }
+
+    .result-panel {
+        position: static;
+    }
+
+    .container {
+        max-width: 700px;
+    }
+}
+
+/* 手機 */
+@media (max-width: 640px) {
+    .container {
+        padding: 0 12px;
+    }
+
+    nav {
+        padding: 0.5rem 0;
+    }
+
+    .logo a {
+        font-size: 1.1rem;
+    }
+
+    .author-info {
+        display: none;
+    }
+
+    main {
+        padding: 1rem 0;
+    }
+
+    .card-header {
+        padding: 12px 16px;
+    }
+
+    .card-body {
+        padding: 12px 16px;
+    }
+
+    .form-grid-2col {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row label {
+        min-width: 75px;
+        font-size: 0.82rem;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .max-rebar-row {
+        margin-left: 0;
+    }
+
+    .rebar-input-row,
+    .load-input-row {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .card-actions {
+        flex-direction: column;
+    }
+
+    .card-actions .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pm-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .pm-actions .btn-primary-action,
+    .pm-actions .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+}

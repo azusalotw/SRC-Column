@@ -1,0 +1,289 @@
+/* ============================================
+   斷面性質結果區域
+   ============================================ */
+.result-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 12px;
+    color: var(--text-tertiary);
+}
+
+.result-placeholder p {
+    font-size: 0.9rem;
+}
+
+.result-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.result-section {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.result-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-section-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-blue { background: var(--primary-color); }
+.dot-purple { background: #7c3aed; }
+.dot-orange { background: #d97706; }
+.dot-green { background: var(--success-color); }
+.dot-cyan { background: #0891b2; }
+.dot-red { background: #dc2626; }
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.result-table tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-table tr:last-child {
+    border-bottom: none;
+}
+
+.result-table td {
+    padding: 7px 14px;
+    vertical-align: middle;
+}
+
+.result-table td:first-child {
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    width: 45%;
+}
+
+.result-table td:last-child {
+    text-align: right;
+    font-family: "Consolas", "SF Mono", monospace;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.result-table tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+}
+
+/* 公式 Tooltip */
+.tip-wrap {
+    cursor: help;
+    border-bottom: 1px dashed var(--text-tertiary);
+    padding-bottom: 1px;
+}
+
+.tip-wrap sub, .tip-wrap sup {
+    font-size: 0.72em;
+}
+
+/* 全域浮動 Tooltip (掛在 body 上) */
+#formulaTooltip {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 0.78rem;
+    font-weight: 400;
+    font-family: "Consolas", "SF Mono", monospace;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+    line-height: 1.6;
+}
+
+#formulaTooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text-primary);
+}
+
+#formulaTooltip sub, #formulaTooltip sup {
+    font-size: 0.72em;
+}
+
+/* P-M 圖表載重點 hover tooltip */
+#cftPMTooltip {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 0.78rem;
+    font-weight: 500;
+    font-family: "Consolas", "SF Mono", monospace;
+    padding: 4px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+}
+
+.result-table sub {
+    font-size: 0.72em;
+    vertical-align: sub;
+}
+
+.result-table sup {
+    font-size: 0.72em;
+    vertical-align: super;
+}
+
+.result-verdict {
+    background-color: var(--bg-tertiary) !important;
+}
+
+.result-verdict td:first-child {
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+}
+
+/* 寬厚比判定標籤 */
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: -apple-system, sans-serif;
+}
+
+.badge-seismic {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.badge-compact {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.badge-fail {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.badge-info {
+    background-color: rgba(8, 145, 178, 0.12);
+    color: #0891b2;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .badge-seismic {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+[data-theme="dark"] .badge-compact {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .badge-fail {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+[data-theme="dark"] .badge-info {
+    background-color: rgba(8, 145, 178, 0.2);
+    color: #22d3ee;
+}
+
+[data-theme="dark"] #formulaTooltip {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+[data-theme="dark"] #formulaTooltip::after {
+    border-top-color: #e2e8f0;
+}
+
+[data-theme="dark"] #cftPMTooltip {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* 剛度比例子表標題 */
+.result-subheader td {
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.8rem;
+    padding-top: 12px !important;
+    padding-bottom: 6px !important;
+    border-bottom: 2px solid var(--border-color) !important;
+    font-family: -apple-system, sans-serif !important;
+}
+
+/* 剛度比例列 */
+.result-ratio td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* 比例長條 */
+.ratio-bar {
+    display: inline-block;
+    width: 80px;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.ratio-fill {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.ratio-steel {
+    background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.ratio-rc {
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+[data-theme="dark"] .ratio-steel {
+    background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+}
+
+[data-theme="dark"] .ratio-rc {
+    background: linear-gradient(90deg, #60a5fa, #93c5fd);
+}

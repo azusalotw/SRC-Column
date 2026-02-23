@@ -1,0 +1,91 @@
+/* ============================================
+   載重列表
+   ============================================ */
+.rebar-list-container,
+.load-list-container {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin: 10px 0;
+    background-color: var(--bg-secondary);
+}
+
+.rebar-list,
+.load-list {
+    min-height: 60px;
+}
+
+.rebar-list-empty,
+.load-list-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+}
+
+.load-header-row {
+    margin-bottom: 10px;
+}
+
+/* 載重列表項目 */
+.load-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.load-item:last-child {
+    border-bottom: none;
+}
+
+.load-item-header {
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    font-size: 0.78rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.load-item-alt {
+    background: var(--bg-secondary);
+}
+
+.load-col-no {
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.load-col-val {
+    flex: 1;
+    text-align: right;
+    font-family: "Consolas", "SF Mono", monospace;
+    padding: 0 8px;
+}
+
+.load-del-btn {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--danger-color);
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.load-del-btn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.1);
+}

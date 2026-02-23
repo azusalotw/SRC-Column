@@ -215,15 +215,13 @@ function cftGetInputs() {
         H:    parseFloat(document.getElementById('cftH').value) || 150,
         tw:   parseFloat(document.getElementById('cftTw').value) || 6,
         L:    parseFloat(document.getElementById('cftLength').value) || 3.5,
-        Kx:   parseFloat(document.getElementById('cftKx').value) || 1.0,
-        Ky:   parseFloat(document.getElementById('cftKy').value) || 1.0,
+        K:    parseFloat(document.getElementById('cftKx').value) || 1.0,
         fc:   parseFloat(document.getElementById('cftFc').value) || 280,
         Fys:  parseFloat(document.getElementById('cftFys').value) || 3500,
         Fyr:  parseFloat(document.getElementById('cftFyr').value) || 0,
         Es:   parseFloat(document.getElementById('cftEs').value) || 2040000,
         Pu:   parseFloat(document.getElementById('cftLoadPu').value) || 0,
         Mux:  parseFloat(document.getElementById('cftLoadMu').value) || 0,
-        Muy:  0,
         phiC: parseFloat(document.getElementById('cftPhiC').value) || 0.85,
         phiB: parseFloat(document.getElementById('cftPhiB').value) || 0.90,
         c1:   parseFloat(document.getElementById('cftC1').value) || 1.00,
@@ -245,23 +243,16 @@ function cftCalcSectionProps(inp) {
     const Ac = Bi * Hi;
     const Ar = 0; // CFT 無鋼筋
 
-    const Ig_x = B * Math.pow(H, 3) / 12;
-    const Ig_y = H * Math.pow(B, 3) / 12;
-
-    const Is_x = Ig_x - Bi * Math.pow(Hi, 3) / 12;
-    const Is_y = Ig_y - Hi * Math.pow(Bi, 3) / 12;
-
-    const Zs_x = B * Math.pow(H, 2) / 4 - Bi * Math.pow(Hi, 2) / 4;
-    const Zs_y = H * Math.pow(B, 2) / 4 - Hi * Math.pow(Bi, 2) / 4;
-
-    const rs_x = Math.sqrt(Is_x / As);
-    const rs_y = Math.sqrt(Is_y / As);
+    const Ig = B * Math.pow(H, 3) / 12;
+    const Is = Ig - Bi * Math.pow(Hi, 3) / 12;
+    const Zs = B * Math.pow(H, 2) / 4 - Bi * Math.pow(Hi, 2) / 4;
+    const rs = Math.sqrt(Is / As);
     const rho = As / Ag;
 
     // 最小板厚
     const t_min = B * Math.sqrt(Fys / (3 * Es));
 
-    return { Ag, As, Ac, Ar, Ig_x, Ig_y, Is_x, Is_y, Zs_x, Zs_y, rs_x, rs_y, rho, t_min, Bi, Hi };
+    return { Ag, As, Ac, Ar, Ig, Is, Zs, rs, rho, t_min, Bi, Hi };
 }
 
 // ============================================
@@ -277,7 +268,7 @@ function cftCalcWidthThickness(inp, sec) {
 // ============================================
 function cftCalcComposite(inp, sec) {
     const { Fys, Fyr, fc, Es, c1, c2, c3 } = inp;
-    const { As, Ac, Ar, Is_x, Is_y } = sec;
+    const { As, Ac, Ar, Is } = sec;
 
     const Ec = 12000 * Math.sqrt(fc);
 
@@ -288,41 +279,29 @@ function cftCalcComposite(inp, sec) {
     const Em = Es + c3 * Ec * (Ac / As);
 
     // rm = sqrt(Is/As)
-    const rm_x = Math.sqrt(Is_x / As);
-    const rm_y = Math.sqrt(Is_y / As);
+    const rm = Math.sqrt(Is / As);
 
-    return { Ec, Fmy, Em, rm_x, rm_y };
+    return { Ec, Fmy, Em, rm };
 }
 
 // ============================================
 //  柱挫屈強度
 // ============================================
 function cftCalcBuckling(inp, comp, sec) {
-    const { Kx, Ky, L, phiC } = inp;
-    const { Fmy, Em, rm_x, rm_y } = comp;
+    const { K, L, phiC } = inp;
+    const { Fmy, Em, rm } = comp;
     const { As } = sec;
     const Lcm = L * 100; // m → cm
 
-    // X 軸
-    const lc_x = (Kx * Lcm) / (Math.PI * rm_x) * Math.sqrt(Fmy / Em);
-    const Fcr_x = lc_x <= 1.5
-        ? Math.pow(0.658, lc_x * lc_x) * Fmy
-        : (0.877 / (lc_x * lc_x)) * Fmy;
-
-    // Y 軸
-    const lc_y = (Ky * Lcm) / (Math.PI * rm_y) * Math.sqrt(Fmy / Em);
-    const Fcr_y = lc_y <= 1.5
-        ? Math.pow(0.658, lc_y * lc_y) * Fmy
-        : (0.877 / (lc_y * lc_y)) * Fmy;
-
-    // 控制軸 (取較小 Fcr)
-    const Fcr = Math.min(Fcr_x, Fcr_y);
-    const lc_gov = Fcr === Fcr_x ? lc_x : lc_y;
+    const lc = (K * Lcm) / (Math.PI * rm) * Math.sqrt(Fmy / Em);
+    const Fcr = lc <= 1.5
+        ? Math.pow(0.658, lc * lc) * Fmy
+        : (0.877 / (lc * lc)) * Fmy;
 
     const Pn = As * Fcr / 1000; // kgf → tf
     const phiPn = phiC * Pn;
 
-    return { lc_x, Fcr_x, lc_y, Fcr_y, Fcr, lc_gov, Pn, phiPn };
+    return { lc, Fcr, Pn, phiPn };
 }
 
 // ============================================
@@ -330,42 +309,39 @@ function cftCalcBuckling(inp, comp, sec) {
 // ============================================
 function cftCalcMoment(inp, sec) {
     const { Fys, phiB } = inp;
-    const { Zs_x, Zs_y } = sec;
+    const { Zs } = sec;
 
-    const Mnx = Zs_x * Fys / 100000; // kgf·cm → tf·m
-    const Mny = Zs_y * Fys / 100000;
-    const phiMnx = phiB * Mnx;
-    const phiMny = phiB * Mny;
+    const Mn = Zs * Fys / 100000; // kgf·cm → tf·m
+    const phiMn = phiB * Mn;
 
-    return { Mnx, Mny, phiMnx, phiMny };
+    return { Mn, phiMn };
 }
 
 // ============================================
 //  P-M 交互作用檢核 (AISC 雙線性)
 // ============================================
 function cftCalcInteraction(inp, buck, mom) {
-    const { Pu, Mux, Muy } = inp;
+    const { Pu, Mux } = inp;
     const { phiPn } = buck;
-    const { phiMnx, phiMny } = mom;
+    const { phiMn } = mom;
 
-    if (phiPn === 0) return { ratio_P: 0, ratio_Mx: 0, ratio_My: 0, value: 0, formula: '-', ok: true };
+    if (phiPn === 0) return { ratio_P: 0, ratio_M: 0, value: 0, formula: '-', ok: true };
 
     const ratio_P = Pu / phiPn;
-    const ratio_Mx = phiMnx > 0 ? Mux / phiMnx : 0;
-    const ratio_My = phiMny > 0 ? Muy / phiMny : 0;
+    const ratio_M = phiMn > 0 ? Mux / phiMn : 0;
 
     let value, formula;
     if (ratio_P >= 0.2) {
-        // H1-1a: Pu/(φcPn) + 8/9·(Mux/(φbMnx) + Muy/(φbMny)) ≤ 1.0
-        value = ratio_P + (8 / 9) * (ratio_Mx + ratio_My);
+        // H1-1a: Pu/(φcPn) + 8/9·Mu/(φbMn) ≤ 1.0
+        value = ratio_P + (8 / 9) * ratio_M;
         formula = 'H1-1a';
     } else {
-        // H1-1b: Pu/(2φcPn) + Mux/(φbMnx) + Muy/(φbMny) ≤ 1.0
-        value = ratio_P / 2 + ratio_Mx + ratio_My;
+        // H1-1b: Pu/(2φcPn) + Mu/(φbMn) ≤ 1.0
+        value = ratio_P / 2 + ratio_M;
         formula = 'H1-1b';
     }
 
-    return { ratio_P, ratio_Mx, ratio_My, value, formula, ok: value <= 1.0 };
+    return { ratio_P, ratio_M, value, formula, ok: value <= 1.0 };
 }
 
 // ============================================
@@ -393,14 +369,14 @@ function cftRenderResults(r) {
     const ngBadge = '<span class="badge badge-fail">NG</span>';
 
     // Fcr 公式
-    const fcrFormula = buck.lc_gov <= 1.5
+    const fcrFormula = buck.lc <= 1.5
         ? '0.658<sup>λc²</sup> · F<sub>my</sub>'
         : '(0.877 / λ<sub>c</sub>²) · F<sub>my</sub>';
 
     // P-M 檢核公式
     const interFormula = inter.formula === 'H1-1a'
-        ? 'P<sub>u</sub>/(φ<sub>c</sub>P<sub>n</sub>) + 8/9 · [M<sub>ux</sub>/(φ<sub>b</sub>M<sub>nx</sub>) + M<sub>uy</sub>/(φ<sub>b</sub>M<sub>ny</sub>)]'
-        : 'P<sub>u</sub>/(2φ<sub>c</sub>P<sub>n</sub>) + M<sub>ux</sub>/(φ<sub>b</sub>M<sub>nx</sub>) + M<sub>uy</sub>/(φ<sub>b</sub>M<sub>ny</sub>)';
+        ? 'P<sub>u</sub>/(φ<sub>c</sub>P<sub>n</sub>) + 8/9 · M<sub>u</sub>/(φ<sub>b</sub>M<sub>n</sub>)'
+        : 'P<sub>u</sub>/(2φ<sub>c</sub>P<sub>n</sub>) + M<sub>u</sub>/(φ<sub>b</sub>M<sub>n</sub>)';
 
     const html = `
     <!-- 斷面性質 -->
@@ -410,10 +386,10 @@ function cftRenderResults(r) {
             <tr><td>${tip('A<sub>g</sub>', 'B × H')}</td><td>${f(sec.Ag, 2)} cm²</td></tr>
             <tr><td>${tip('A<sub>s</sub> (鋼管面積)', 'BH − (B−2t<sub>w</sub>)(H−2t<sub>w</sub>)')}</td><td>${f(sec.As, 2)} cm²</td></tr>
             <tr><td>${tip('A<sub>c</sub> (混凝土面積)', '(B−2t<sub>w</sub>)(H−2t<sub>w</sub>)')}</td><td>${f(sec.Ac, 2)} cm²</td></tr>
-            <tr><td>${tip('I<sub>g,x</sub>', 'BH³ / 12')}</td><td>${f(sec.Ig_x, 2)} cm⁴</td></tr>
-            <tr><td>${tip('I<sub>s,x</sub> = I<sub>s,y</sub>', 'I<sub>g</sub> − B<sub>i</sub>H<sub>i</sub>³ / 12')}</td><td>${f(sec.Is_x, 2)} cm⁴</td></tr>
-            <tr><td>${tip('Z<sub>s,x</sub> = Z<sub>s,y</sub>', 'BH² / 4 − B<sub>i</sub>H<sub>i</sub>² / 4')}</td><td>${f(sec.Zs_x, 2)} cm³</td></tr>
-            <tr><td>${tip('r<sub>s,x</sub> = r<sub>s,y</sub>', '√(I<sub>s</sub> / A<sub>s</sub>)')}</td><td>${f(sec.rs_x, 2)} cm</td></tr>
+            <tr><td>${tip('I<sub>g</sub>', 'BH³ / 12')}</td><td>${f(sec.Ig, 2)} cm⁴</td></tr>
+            <tr><td>${tip('I<sub>s</sub>', 'I<sub>g</sub> − B<sub>i</sub>H<sub>i</sub>³ / 12')}</td><td>${f(sec.Is, 2)} cm⁴</td></tr>
+            <tr><td>${tip('Z<sub>s</sub>', 'BH² / 4 − B<sub>i</sub>H<sub>i</sub>² / 4')}</td><td>${f(sec.Zs, 2)} cm³</td></tr>
+            <tr><td>${tip('r<sub>s</sub>', '√(I<sub>s</sub> / A<sub>s</sub>)')}</td><td>${f(sec.rs, 2)} cm</td></tr>
             <tr><td>${tip('ρ = A<sub>s</sub> / A<sub>g</sub>')}</td><td>${(sec.rho * 100).toFixed(2)}%</td></tr>
         </table>
     </div>
@@ -434,7 +410,7 @@ function cftRenderResults(r) {
             <tr><td>${tip('E<sub>c</sub>', '12000√f\'<sub>c</sub>')}</td><td>${f(comp.Ec, 2)} kgf/cm²</td></tr>
             <tr><td>${tip('F<sub>my</sub>', 'F<sub>ys</sub> + c<sub>1</sub>F<sub>yr</sub>(A<sub>r</sub>/A<sub>s</sub>) + c<sub>2</sub>f\'<sub>c</sub>(A<sub>c</sub>/A<sub>s</sub>)')}</td><td>${f(comp.Fmy, 2)} kgf/cm²</td></tr>
             <tr><td>${tip('E<sub>m</sub>', 'E<sub>s</sub> + c<sub>3</sub>E<sub>c</sub>(A<sub>c</sub>/A<sub>s</sub>)')}</td><td>${f(comp.Em, 2)} kgf/cm²</td></tr>
-            <tr><td>${tip('r<sub>m</sub>', '√(I<sub>s</sub> / A<sub>s</sub>)')}</td><td>${f(comp.rm_x, 2)} cm</td></tr>
+            <tr><td>${tip('r<sub>m</sub>', '√(I<sub>s</sub> / A<sub>s</sub>)')}</td><td>${f(comp.rm, 2)} cm</td></tr>
         </table>
     </div>
 
@@ -442,8 +418,8 @@ function cftRenderResults(r) {
     <div class="result-section">
         <div class="result-section-title"><span class="dot dot-orange"></span>柱挫屈強度</div>
         <table class="result-table">
-            <tr><td>${tip('K<sub>x</sub>L<sub>x</sub> / (π·r<sub>m</sub>)')}</td><td>${f((inp.Kx * inp.L * 100) / (Math.PI * comp.rm_x), 3)}</td></tr>
-            <tr><td>${tip('λ<sub>c</sub>', 'KL / (πr<sub>m</sub>) · √(F<sub>my</sub> / E<sub>m</sub>)')}</td><td>${f(buck.lc_gov, 4)} ${buck.lc_gov <= 1.5 ? '≤ 1.5' : '> 1.5'}</td></tr>
+            <tr><td>${tip('KL / (π·r<sub>m</sub>)')}</td><td>${f((inp.K * inp.L * 100) / (Math.PI * comp.rm), 3)}</td></tr>
+            <tr><td>${tip('λ<sub>c</sub>', 'KL / (πr<sub>m</sub>) · √(F<sub>my</sub> / E<sub>m</sub>)')}</td><td>${f(buck.lc, 4)} ${buck.lc <= 1.5 ? '≤ 1.5' : '> 1.5'}</td></tr>
             <tr><td>${tip('F<sub>cr</sub>', fcrFormula)}</td><td>${f(buck.Fcr, 2)} kgf/cm²</td></tr>
             <tr><td>${tip('P<sub>n</sub>', 'A<sub>s</sub> · F<sub>cr</sub>')}</td><td>${f(buck.Pn, 2)} tf</td></tr>
             <tr><td>${tip('φ<sub>c</sub>P<sub>n</sub>', 'φ<sub>c</sub> · A<sub>s</sub> · F<sub>cr</sub>')}</td><td>${f(buck.phiPn, 2)} tf</td></tr>
@@ -454,10 +430,8 @@ function cftRenderResults(r) {
     <div class="result-section">
         <div class="result-section-title"><span class="dot dot-cyan"></span>彎矩強度</div>
         <table class="result-table">
-            <tr><td>${tip('M<sub>nx</sub>', 'Z<sub>x</sub> · F<sub>ys</sub>')}</td><td>${f(mom.Mnx, 2)} tf-m</td></tr>
-            <tr><td>${tip('M<sub>ny</sub>', 'Z<sub>y</sub> · F<sub>ys</sub>')}</td><td>${f(mom.Mny, 2)} tf-m</td></tr>
-            <tr><td>${tip('φ<sub>b</sub>M<sub>nx</sub>', 'φ<sub>b</sub> · Z<sub>x</sub> · F<sub>ys</sub>')}</td><td>${f(mom.phiMnx, 2)} tf-m</td></tr>
-            <tr><td>${tip('φ<sub>b</sub>M<sub>ny</sub>', 'φ<sub>b</sub> · Z<sub>y</sub> · F<sub>ys</sub>')}</td><td>${f(mom.phiMny, 2)} tf-m</td></tr>
+            <tr><td>${tip('M<sub>n</sub>', 'Z<sub>s</sub> · F<sub>ys</sub>')}</td><td>${f(mom.Mn, 2)} tf-m</td></tr>
+            <tr><td>${tip('φ<sub>b</sub>M<sub>n</sub>', 'φ<sub>b</sub> · Z<sub>s</sub> · F<sub>ys</sub>')}</td><td>${f(mom.phiMn, 2)} tf-m</td></tr>
         </table>
     </div>
 
@@ -466,8 +440,7 @@ function cftRenderResults(r) {
         <div class="result-section-title"><span class="dot dot-red"></span>P-M 交互作用檢核</div>
         <table class="result-table">
             <tr><td>${tip('P<sub>u</sub> / (φ<sub>c</sub>P<sub>n</sub>)')}</td><td>${f(inter.ratio_P, 4)} ${inter.ratio_P >= 0.2 ? '≥ 0.2 → ' + inter.formula : '< 0.2 → ' + inter.formula}</td></tr>
-            <tr><td>${tip('M<sub>ux</sub> / (φ<sub>b</sub>M<sub>nx</sub>)')}</td><td>${f(inter.ratio_Mx, 4)}</td></tr>
-            <tr><td>${tip('M<sub>uy</sub> / (φ<sub>b</sub>M<sub>ny</sub>)')}</td><td>${f(inter.ratio_My, 4)}</td></tr>
+            <tr><td>${tip('M<sub>u</sub> / (φ<sub>b</sub>M<sub>n</sub>)')}</td><td>${f(inter.ratio_M, 4)}</td></tr>
             <tr class="result-verdict"><td>${tip('檢核值 (' + inter.formula + ')', interFormula)}</td><td>${f(inter.value, 4)} ${inter.ok ? '≤ 1.0' : '> 1.0'} ${inter.ok ? okBadge : ngBadge}</td></tr>
         </table>
     </div>`;
@@ -688,7 +661,7 @@ function drawCftPMChart(r) {
 
     const { buck, mom, inter, inp } = r;
     const phiPn = buck.phiPn;
-    const phiMn = Math.max(mom.phiMnx, mom.phiMny);
+    const phiMn = mom.phiMn;
 
     if (phiPn <= 0 || phiMn <= 0) { drawCftPMPlaceholder(); return; }
 
@@ -858,14 +831,13 @@ function drawCftPMChart(r) {
 
     // 若 loadData 為空，至少畫輸入欄的值
     if (points.length === 0 && (inp.Pu !== 0 || inp.Mux !== 0)) {
-        const Mu = Math.sqrt(inp.Mux * inp.Mux + inp.Muy * inp.Muy);
-        const ok = checkPM(inp.Pu, Mu);
+        const ok = checkPM(inp.Pu, inp.Mux);
         if (!ok) allOK = false;
-        const dx = toX(Mu), dy = toY(inp.Pu);
+        const dx = toX(inp.Mux), dy = toY(inp.Pu);
         if (dx >= pad.l && dx <= pad.l + gW && dy >= pad.t && dy <= pad.t + gH) {
             ctx.fillStyle = ok ? (isDark ? '#34d399' : '#059669') : (isDark ? '#f87171' : '#dc2626');
             ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2); ctx.fill();
-            cftChartPoints.push({ sx: dx, sy: dy, label: `P=${inp.Pu}, M=${Math.round(Mu)}`, ok });
+            cftChartPoints.push({ sx: dx, sy: dy, label: `P=${inp.Pu}, M=${inp.Mux}`, ok });
         }
     }
 
